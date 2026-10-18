@@ -1,0 +1,14 @@
+{
+	"name": "atelier-mcp",
+	"private": true,
+	"description": "Environnement de développement du plugin WordPress Atelier MCP.",
+	"scripts": {
+		"env:fetch": "bash dev/fetch.sh",
+		"env:start": "bash dev/env.sh start",
+		"env:stop": "bash dev/env.sh stop",
+		"env:destroy": "bash dev/env.sh destroy",
+		"wp": "bash dev/env.sh wp",
+		"lint:php": "docker run --rm -v \"$PWD\":/app -w /app --entrypoint sh wordpress:php8.2 -c 'find . -name \"*.php\" -not -path \"./vendor/*\" -not -path \"./node_modules/*\" -not -path \"./.dev-cache/*\" -print0 | xargs -0 -n1 php -l > /tmp/lint.txt; status=$?; grep -v \"^No syntax errors\" /tmp/lint.txt; exit $status'",
+		"test:smoke": "bash tests/smoke.sh"
+	}
+}
