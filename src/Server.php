@@ -63,6 +63,9 @@ final class Server {
 		if ( ! current_user_can( self::TRANSPORT_CAPABILITY ) ) {
 			return new \WP_Error( 'atelier_forbidden', __( 'Droits insuffisants pour utiliser Atelier MCP.', 'atelier-mcp' ), array( 'status' => 403 ) );
 		}
+		if ( Auth\TokenContext::is_token_authenticated() && ! Auth\TokenContext::has_scope( Auth\TokenContext::SCOPE_READ ) ) {
+			return new \WP_Error( 'atelier_insufficient_scope', __( 'Le jeton d\'accès ne dispose pas de la portée minimale requise (atelier:read).', 'atelier-mcp' ), array( 'status' => 403 ) );
+		}
 		return true;
 	}
 }

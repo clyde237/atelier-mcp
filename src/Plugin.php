@@ -12,6 +12,10 @@ defined( 'ABSPATH' ) || exit;
 final class Plugin {
 
 	public static function boot(): void {
+		Auth\BearerAuth::hook();
+		Auth\Server::hook();
+		Auth\AdminPage::hook();
+
 		add_action( 'plugins_loaded', array( self::class, 'on_plugins_loaded' ) );
 	}
 

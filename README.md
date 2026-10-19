@@ -32,13 +32,13 @@ Prévu : écriture via l'API PHP d'Elementor (révisions, cache), lien d'aperçu
 2. Téléverser le zip d'Atelier MCP et l'activer.
 3. Point d'accès MCP : `https://<site>/wp-json/atelier/mcp`.
 
-Authentification (version 0.1) : mot de passe d'application WordPress (Profil › Mots de passe d'application), envoyé en `Authorization: Basic`. Utilisable depuis Claude Code :
-
-```bash
-claude mcp add --transport http atelier https://<site>/wp-json/atelier/mcp --header "Authorization: Basic <base64 utilisateur:mot-de-passe-application>"
-```
-
-claude.ai web exigera OAuth : prévu dans une version suivante.
+Authentification :
+- **OAuth 2.1 avec PKCE** (recommandé pour Claude.ai web, ChatGPT, Antigravity) : négociation automatique via découverte RFC 9728 (`/.well-known/oauth-protected-resource`) et RFC 8414.
+- **Jetons personnels (Bearer PAT)** : générés dans WordPress (Atelier MCP › Connexion) pour Claude Code CLI ou scripts :
+  ```bash
+  claude mcp add --transport http atelier https://<site>/wp-json/atelier/mcp --header "Authorization: Bearer <votre_jeton>"
+  ```
+- **Mots de passe d'application WordPress** (rétrocompatible) : `Authorization: Basic <base64 utilisateur:mot-de-passe>`.
 
 ## Droits
 
@@ -54,7 +54,8 @@ Prérequis : Docker et Node.js. Environnement en `docker compose` avec les image
 npm run env:fetch      # une fois : télécharge MCP Adapter et Elementor dans .dev-cache/ (avec reprises)
 npm run env:start      # WordPress 7.1 sur http://localhost:8888 (admin / password), plugins activés
 npm run lint:php       # php -l sur tous les fichiers
-npm run test:smoke     # test de bout en bout du serveur MCP
+npm run test:smoke     # test de bout en bout du serveur MCP (12 vérifications)
+npm run test:oauth     # test de bout en bout OAuth 2.1 & tokens Bearer (12 vérifications)
 npm run env:stop
 ```
 
