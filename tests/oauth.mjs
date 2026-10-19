@@ -17,8 +17,9 @@ function generatePkce() {
 	return { verifier, challenge };
 }
 
-function injectAuthCode(codeHash, clientId, challenge, redirectUri, userId = 1) {
-	const php = `set_transient('atelier_oauth_code_${codeHash}', array('client_id' => '${clientId}', 'user_id' => ${userId}, 'redirect_uri' => '${redirectUri}', 'scopes' => array('atelier:read', 'atelier:write'), 'code_challenge' => '${challenge}', 'created_at' => time()), 300);`;
+function injectAuthCode(codeHash, clientId, challenge, redirectUri, userId = 1, scopes = ['atelier:read', 'atelier:write']) {
+	const scopesPhp = `array(${scopes.map(s => `'${s}'`).join(', ')})`;
+	const php = `set_transient('atelier_oauth_code_${codeHash}', array('client_id' => '${clientId}', 'user_id' => ${userId}, 'redirect_uri' => '${redirectUri}', 'scopes' => ${scopesPhp}, 'code_challenge' => '${challenge}', 'created_at' => time()), 300);`;
 	execSync(`bash dev/env.sh wp eval "${php.replace(/"/g, '\\"')}" 2>/dev/null`);
 }
 
@@ -38,6 +39,7 @@ check('réponse 401 sur /atelier/mcp inclut le header WWW-Authenticate avec reso
 	const wwwAuth = res.headers.get('www-authenticate');
 	assert.ok(wwwAuth, 'Header WWW-Authenticate manquant');
 	assert.match(wwwAuth, /Bearer resource_metadata=".*oauth-protected-resource"/);
+	assert.match(wwwAuth, /scope="mcp:tools atelier:read atelier:write"/);
 });
 
 // 1b. En-têtes CORS et prévol OPTIONS
@@ -61,6 +63,8 @@ check('métadonnées de la ressource protégée (RFC 9728)', async () => {
 	assert.ok(Array.isArray(data.scopes_supported));
 	assert.ok(data.scopes_supported.includes('atelier:read'));
 	assert.ok(data.scopes_supported.includes('atelier:write'));
+	assert.ok(data.scopes_supported.includes('mcp:tools'));
+	assert.ok(data.scopes_supported.includes('offline_access'));
 });
 
 // 3. Métadonnées RFC 8414
@@ -75,6 +79,8 @@ check('métadonnées du serveur d\'autorisation (RFC 8414)', async () => {
 	assert.deepEqual(data.code_challenge_methods_supported, ['S256']);
 	assert.ok(data.grant_types_supported.includes('authorization_code'));
 	assert.ok(data.grant_types_supported.includes('refresh_token'));
+	assert.ok(data.scopes_supported.includes('mcp:tools'));
+	assert.ok(data.scopes_supported.includes('offline_access'));
 });
 
 // 4. Dynamic Client Registration (RFC 7591)
@@ -184,6 +190,52 @@ check('authentification sur le serveur MCP avec le jeton Bearer OAuth', async ()
 	assert.equal(res.status, 200, `Attendu 200, reçu ${res.status}`);
 	const json = await res.json();
 	assert.ok(json.result?.instructions, 'Session MCP non initialisée');
+});
+
+// 6b. Accès avec jeton ayant uniquement la portée mcp:tools (comme Claude.ai)
+check('authentification MCP avec un jeton ayant uniquement la portée mcp:tools', async () => {
+	const authCode = crypto.randomBytes(16).toString('hex');
+	const codeHash = crypto.createHash('sha256').update(authCode).digest('hex');
+	const specificPkce = generatePkce();
+
+	injectAuthCode(codeHash, dynamicClient.client_id, specificPkce.challenge, 'https://claude.ai/api/mcp/auth_callback', 1, ['mcp:tools']);
+
+	const tokenRes = await fetch(`${OAUTH_BASE}/token`, {
+		method: 'POST',
+		headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+		body: new URLSearchParams({
+			grant_type: 'authorization_code',
+			code: authCode,
+			client_id: dynamicClient.client_id,
+			redirect_uri: 'https://claude.ai/api/mcp/auth_callback',
+			code_verifier: specificPkce.verifier,
+		}),
+	});
+	assert.equal(tokenRes.status, 200);
+	const data = await tokenRes.json();
+	assert.ok(data.access_token);
+
+	const mcpRes = await fetch(MCP_ENDPOINT, {
+		method: 'POST',
+		headers: {
+			'Content-Type': 'application/json',
+			Authorization: `Bearer ${data.access_token}`,
+		},
+		body: JSON.stringify({
+			jsonrpc: '2.0',
+			id: 11,
+			method: 'initialize',
+			params: {
+				protocolVersion: '2025-11-25',
+				capabilities: {},
+				clientInfo: { name: 'claude-mcp-tools-only', version: '1.0' },
+			},
+		}),
+	});
+
+	assert.equal(mcpRes.status, 200);
+	const json = await mcpRes.json();
+	assert.ok(json.result?.instructions);
 });
 
 // 7. Rotation du Refresh Token

@@ -86,7 +86,7 @@ final class ConsentScreen {
 				$requested_scopes = array_filter( explode( ' ', $scope ) );
 				$granted_scopes   = array_unique(
 					array_merge(
-						array( TokenContext::SCOPE_READ, TokenContext::SCOPE_WRITE ),
+						array( TokenContext::SCOPE_READ, TokenContext::SCOPE_WRITE, TokenContext::SCOPE_MCP_TOOLS ),
 						$requested_scopes
 					)
 				);
@@ -264,13 +264,14 @@ final class ConsentScreen {
 				</p>
 
 				<ul class="scopes-list">
-					<?php if ( in_array( TokenContext::SCOPE_READ, $requested_scopes, true ) || in_array( TokenContext::SCOPE_ADMIN, $requested_scopes, true ) ) : ?>
-						<li><?php esc_html_e( 'Lire et auditer les pages et documents Elementor', 'atelier-mcp' ); ?></li>
+					<li><?php esc_html_e( 'Exécuter les outils MCP Atelier (audit, pages, widgets Elementor, Gutenberg)', 'atelier-mcp' ); ?></li>
+					<?php if ( empty( $requested_scopes ) || in_array( TokenContext::SCOPE_READ, $requested_scopes, true ) || in_array( 'read', $requested_scopes, true ) || in_array( TokenContext::SCOPE_ADMIN, $requested_scopes, true ) ) : ?>
+						<li><?php esc_html_e( 'Lire et auditer les pages et documents WordPress / Elementor', 'atelier-mcp' ); ?></li>
 					<?php endif; ?>
-					<?php if ( in_array( TokenContext::SCOPE_WRITE, $requested_scopes, true ) || in_array( TokenContext::SCOPE_ADMIN, $requested_scopes, true ) ) : ?>
+					<?php if ( empty( $requested_scopes ) || in_array( TokenContext::SCOPE_WRITE, $requested_scopes, true ) || in_array( 'write', $requested_scopes, true ) || in_array( TokenContext::SCOPE_ADMIN, $requested_scopes, true ) ) : ?>
 						<li><?php esc_html_e( 'Créer et modifier des pages et templates', 'atelier-mcp' ); ?></li>
 					<?php endif; ?>
-					<?php if ( in_array( TokenContext::SCOPE_ADMIN, $requested_scopes, true ) ) : ?>
+					<?php if ( in_array( TokenContext::SCOPE_ADMIN, $requested_scopes, true ) || in_array( 'admin', $requested_scopes, true ) ) : ?>
 						<li><?php esc_html_e( 'Consulter les réglages avancés et informations système', 'atelier-mcp' ); ?></li>
 					<?php endif; ?>
 				</ul>

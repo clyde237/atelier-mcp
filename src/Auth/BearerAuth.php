@@ -130,10 +130,11 @@ final class BearerAuth {
 			$status = $response->get_status();
 			if ( 401 === $status || 403 === $status ) {
 				$metadata_url = rest_url( Server::ROUTE_NAMESPACE . '/oauth-protected-resource' );
+				$scopes_str   = 'mcp:tools atelier:read atelier:write';
 				if ( 403 === $status ) {
-					$response->header( 'WWW-Authenticate', sprintf( 'Bearer error="insufficient_scope", scope="atelier:read atelier:write", resource_metadata="%s"', esc_url_raw( $metadata_url ) ) );
+					$response->header( 'WWW-Authenticate', sprintf( 'Bearer error="insufficient_scope", scope="%s", resource_metadata="%s"', esc_attr( $scopes_str ), esc_url_raw( $metadata_url ) ) );
 				} else {
-					$response->header( 'WWW-Authenticate', sprintf( 'Bearer resource_metadata="%s"', esc_url_raw( $metadata_url ) ) );
+					$response->header( 'WWW-Authenticate', sprintf( 'Bearer resource_metadata="%s", scope="%s"', esc_url_raw( $metadata_url ), esc_attr( $scopes_str ) ) );
 				}
 			}
 		}

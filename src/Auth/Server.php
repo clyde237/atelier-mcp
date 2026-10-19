@@ -266,11 +266,7 @@ final class Server {
 		return array(
 			'resource'              => $resource,
 			'authorization_servers' => array( $auth_server ),
-			'scopes_supported'      => array(
-				TokenContext::SCOPE_READ,
-				TokenContext::SCOPE_WRITE,
-				TokenContext::SCOPE_ADMIN,
-			),
+			'scopes_supported'      => TokenContext::all_supported_scopes(),
 			'bearer_methods_supported' => array( 'header' ),
 			'resource_documentation'   => admin_url( 'admin.php?page=atelier-mcp-connect' ),
 		);
@@ -293,11 +289,7 @@ final class Server {
 			'grant_types_supported'                 => array( 'authorization_code', 'refresh_token' ),
 			'code_challenge_methods_supported'      => array( 'S256' ),
 			'token_endpoint_auth_methods_supported' => array( 'none', 'client_secret_post' ),
-			'scopes_supported'                      => array(
-				TokenContext::SCOPE_READ,
-				TokenContext::SCOPE_WRITE,
-				TokenContext::SCOPE_ADMIN,
-			),
+			'scopes_supported'                      => TokenContext::all_supported_scopes(),
 		);
 	}
 

@@ -197,6 +197,10 @@ final class ClientStore {
 			$client_data['client_secret'] = 'at_sec_' . bin2hex( random_bytes( 24 ) );
 		}
 
+		if ( isset( $payload['scope'] ) ) {
+			$client_data['scope'] = sanitize_text_field( (string) $payload['scope'] );
+		}
+
 		$clients                = self::get_stored_clients();
 		$clients[ $client_id ] = $client_data;
 		self::save_stored_clients( $clients );
