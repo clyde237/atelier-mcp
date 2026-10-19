@@ -13,6 +13,7 @@
 		"test:oauth": "bash tests/oauth.sh",
 		"test:write": "bash tests/write.sh",
 		"test:pro": "bash tests/pro.sh",
-		"test:gutenberg": "bash tests/gutenberg.sh"
+		"test:gutenberg": "bash tests/gutenberg.sh",
+		"build": "bash dev/build.sh"
 	}
 }

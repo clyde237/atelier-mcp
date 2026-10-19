@@ -2,5 +2,7 @@ node_modules/
 vendor/
 .env
 *.zip
+*.sha256
+dist/
 .DS_Store
 .dev-cache/

@@ -77,7 +77,7 @@ check('ouvre une session et envoie les instructions', async () => {
 	await rpc(ADMIN_AUTH, session, 'notifications/initialized');
 });
 
-check('liste les 22 outils Atelier avec leurs annotations', async () => {
+check('liste les 23 outils Atelier avec leurs annotations', async () => {
 	const res = await rpc(ADMIN_AUTH, session, 'tools/list');
 	const names = res.json.result.tools.map((t) => t.name).sort();
 	assert.deepEqual(names, [
@@ -89,6 +89,7 @@ check('liste les 22 outils Atelier avec leurs annotations', async () => {
 		'atelier-get-document',
 		'atelier-get-kit',
 		'atelier-global-widgets',
+		'atelier-guide',
 		'atelier-gutenberg-blocks',
 		'atelier-gutenberg-document',
 		'atelier-gutenberg-patterns',
@@ -199,6 +200,19 @@ check('audit-document signale les problèmes connus de la page de test', async (
 	// et rangée déjà empilée sur mobile.
 	assert.ok(!rules.has('grid-mobile-columns:grid02'), 'grid02 sans réglage mobile ne doit pas être signalée');
 	assert.ok(!rules.has('row-not-stacking:row02'), 'row02 empilée sur mobile ne doit pas être signalée');
+});
+
+check('guide renvoie la méthode pas à pas et les règles de construction', async () => {
+	const all = await callTool(session, 'atelier-guide');
+	assert.ok(all.data.instructions_summary);
+	assert.ok(all.data.sections.workflow);
+	assert.ok(all.data.sections.elementor);
+	assert.ok(all.data.sections.gutenberg);
+	assert.ok(all.data.sections.security);
+
+	const elementorOnly = await callTool(session, 'atelier-guide', { topic: 'elementor' });
+	assert.equal(elementorOnly.data.topic, 'elementor');
+	assert.ok(elementorOnly.data.content.rules['Conteneurs uniquement']);
 });
 
 let failures = 0;

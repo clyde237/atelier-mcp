@@ -61,6 +61,7 @@ final class Registry {
 				new SaveGutenbergDocument(),
 				new GutenbergPatterns(),
 				new ThemeJson(),
+				new Guide(),
 			);
 		}
 		return self::$abilities;

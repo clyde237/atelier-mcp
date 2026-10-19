@@ -144,20 +144,35 @@ Gestion complète de l'éditeur de blocs natif de WordPress et de son système d
   - Liste des modèles de thèmes à blocs (`wp_template`) et parties de modèles (`wp_template_part`).
 - **Suite de tests automatisée** (`npm run test:gutenberg`) : 12 vérifications réussies (100%).
 
-## Ce qui manque
+## Ce qui est fait — phase 6 (Chantiers transversaux & Distribution)
 
-### Phase 6 — Transversal & Distribution (prochaine étape)
+Industrialisation, distribution et robustesse multi-clients :
 
-### Transversal
+- **`atelier-guide` (Guide méthodologique & Règles d'or intégrées)** :
+  - Outil natif MCP fournissant la méthode officielle, les règles de construction (Elementor et Gutenberg), le protocole anti-concurrence et la matrice des outils recommandés.
+  - Résout le problème des clients MCP qui n'injectent pas le prompt initial du serveur dans le contexte du modèle (ChatGPT, Claude Desktop, etc.).
+- **Mises à jour automatiques depuis GitHub (`src/Updater.php`)** :
+  - Intégration transparente avec le système natif de mise à jour de WordPress (`update_plugins`, `plugins_api`, `upgrader_post_install`).
+  - Détection automatique des nouvelles versions publiées sur `clyde237/atelier-mcp` via l'API GitHub Releases.
+  - Cache transient de 12 heures et support de jeton d'accès optionnel (`ATELIER_GITHUB_TOKEN`).
+- **Packaging de distribution (`npm run build` / `dev/build.sh`)** :
+  - Script automatisé extrayant la version de `atelier-mcp.php`, créant une archive propre `atelier-mcp.zip` (structure racine `atelier-mcp/`) et son empreinte cryptographique SHA-256.
+  - Exclusion stricte de tous les répertoires de développement (`dev/`, `tests/`, `.dev-cache/`, etc.).
+- **Suite de tests globale (61/61 vérifications au vert)** :
+  - `lint:php` : 0 erreur de syntaxe PHP.
+  - `test:smoke` : 13/13 vérifications réussies (23 outils déclarés et annotés).
+  - `test:oauth` : 12/12 vérifications réussies.
+  - `test:write` : 12/12 vérifications réussies.
+  - `test:pro` : 12/12 vérifications réussies.
+  - `test:gutenberg` : 12/12 vérifications réussies.
 
-- Outil `atelier-guide` qui renvoie la méthode, car certains clients ne transmettent pas les instructions du serveur au modèle.
-- Schémas d'entrée limités à un sous-ensemble JSON Schema accepté par Gemini et OpenAI, puis test réel avec chaque client.
-- Construction du zip de distribution et mises à jour depuis GitHub.
-- Tests unitaires PHP (aujourd'hui, seul le test de bout en bout existe).
+## Prochaines étapes
 
-## Questions ouvertes
-
-1. **OpenAI** : viser Codex (CLI et éditeur) seulement, ou aussi le chat ChatGPT (abonnement payant et mode développeur requis) ?
-2. **Ordre de test des clients** proposé : claude.ai, Codex, Antigravity, ChatGPT.
-3. **Saint-Gilbert** (hébergé chez WordPress.com) : le forfait permet-il d'installer MCP Adapter et Atelier MCP ?
-4. La conversion en conteneurs de la page d'accueil de Saint-Gilbert attend toujours l'accord pour publication.
+1. **Recette en conditions réelles multi-clients** :
+   - Claude.ai (web) avec flux OAuth 2.1 PKCE.
+   - Claude Code (CLI) via jeton Bearer personnel (PAT).
+   - Antigravity / Gemini via transport HTTP/SSE et OAuth.
+   - ChatGPT / OpenAI avec découverte CIMD/DCR.
+2. **Déploiement sur site pilote (Paroisse Saint-Gilbert)** :
+   - Installation du zip officiel produit par `npm run build`.
+   - Audit et validation des conversions de gabarits.

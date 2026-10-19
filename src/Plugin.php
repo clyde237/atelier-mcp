@@ -16,6 +16,7 @@ final class Plugin {
 		Auth\Server::hook();
 		Auth\AdminPage::hook();
 		Elementor\PreviewSigner::hook();
+		Updater::init();
 
 		add_action( 'plugins_loaded', array( self::class, 'on_plugins_loaded' ) );
 	}

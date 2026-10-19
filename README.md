@@ -32,6 +32,7 @@ Version 0.4.0 : outils de lecture, audit, écriture, révisions, médias, Elemen
 | `atelier-gutenberg-save` | Enregistrement sécurisé de blocs Gutenberg avec concurrence optimiste (modified_gmt) | Écriture |
 | `atelier-gutenberg-patterns` | Découverte et extraction des compositions prédéfinies du thème (patterns) | Lecture |
 | `atelier-theme-json` | Système de design theme.json (palette globale, typographies, espacements, modèles) | Lecture |
+| `atelier-guide` | Guide méthodologique officiel, règles de construction et protocole de sécurité | Lecture |
 
 ## Prérequis
 
@@ -54,6 +55,10 @@ Authentification :
   ```
 - **Mots de passe d'application WordPress** (rétrocompatible) : `Authorization: Basic <base64 utilisateur:mot-de-passe>`.
 
+## Mises à jour
+
+Le plugin inclut un mécanisme natif de mise à jour automatique connecté aux releases GitHub du dépôt `clyde237/atelier-mcp`. Dès qu'une nouvelle version est publiée sur GitHub, WordPress la signale dans Extensions et permet la mise à jour en un clic.
+
 ## Droits
 
 - Ouvrir une session MCP : droit `edit_posts` (contributeur et plus).
@@ -68,11 +73,12 @@ Prérequis : Docker et Node.js. Environnement en `docker compose` avec les image
 npm run env:fetch      # une fois : télécharge MCP Adapter et Elementor dans .dev-cache/ (avec reprises)
 npm run env:start      # WordPress 7.1 sur http://localhost:8888 (admin / password), plugins activés
 npm run lint:php       # php -l sur tous les fichiers
-npm run test:smoke     # test de bout en bout du serveur MCP (12 vérifications)
+npm run test:smoke     # test de bout en bout du serveur MCP (13 vérifications)
 npm run test:oauth     # test de bout en bout OAuth 2.1 & tokens Bearer (12 vérifications)
 npm run test:write     # test de bout en bout des écritures sécurisées (12 vérifications)
 npm run test:pro       # test de bout en bout Elementor Pro & Theme Builder (12 vérifications)
 npm run test:gutenberg # test de bout en bout Gutenberg & theme.json (12 vérifications)
+npm run build          # création du zip de distribution prêt pour WordPress et SHA-256
 npm run env:stop
 ```
 
