@@ -45,6 +45,14 @@ final class Registry {
 				new DescribeWidget(),
 				new GetKit(),
 				new AuditDocument(),
+				new SaveDocument(),
+				new CreateDocument(),
+				new RestoreRevision(),
+				new ListRevisions(),
+				new FlushCache(),
+				new UploadMedia(),
+				new PreviewLink(),
+				new GetActivityLog(),
 			);
 		}
 		return self::$abilities;

@@ -78,6 +78,8 @@ final class Documents {
 		if ( (int) get_option( 'page_on_front' ) === $post->ID ) {
 			$summary['is_front_page'] = true;
 		}
+
+		$summary['preview_url'] = Elementor\PreviewSigner::generate_url( $post->ID );
 		return $summary;
 	}
 

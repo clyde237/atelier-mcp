@@ -15,6 +15,7 @@ final class Plugin {
 		Auth\BearerAuth::hook();
 		Auth\Server::hook();
 		Auth\AdminPage::hook();
+		Elementor\PreviewSigner::hook();
 
 		add_action( 'plugins_loaded', array( self::class, 'on_plugins_loaded' ) );
 	}

@@ -16,14 +16,19 @@ final class Instructions {
 
 	public static function text(): string {
 		$text = <<<'TXT'
-Atelier MCP : outils pour lire, auditer et (bientôt) modifier des pages WordPress construites avec Elementor.
+Atelier MCP : outils pour lire, auditer et modifier des pages WordPress construites avec Elementor.
 
-Méthode
+Méthode de travail
 1. Commencer par atelier-site-info : versions, éditeur, conteneurs actifs, points de rupture, thème.
-2. Trouver la page avec atelier-list-documents, la lire avec atelier-get-document (format "outline" d'abord, "full" seulement si nécessaire).
+2. Trouver la page avec atelier-list-documents, la lire avec atelier-get-document (format "outline" d'abord, "full" seulement si nécessaire). Toujours conserver le modified_gmt renvoyé.
 3. Avant d'écrire un réglage Elementor, vérifier son nom exact avec atelier-describe-widget. Ne jamais deviner un nom de réglage.
 4. Utiliser atelier-get-kit pour reprendre les couleurs et polices globales du site au lieu de valeurs en dur.
-5. Lancer atelier-audit-document avant et après une modification.
+5. Lancer atelier-audit-document avant une modification pour connaître l'état initial.
+6. Tester sa modification avec atelier-save-document (en passant dry_run=true d'abord) : cela audite et valide l'arbre sans toucher à la base de données.
+7. Si la simulation est concluante, enregistrer définitivement avec atelier-save-document (modified_gmt obligatoire pour éviter les écrasements concurrents). Une révision WordPress est automatiquement créée et le cache CSS est régénéré.
+8. En cas de problème ou demande de rollback, utiliser atelier-list-revisions puis atelier-restore-revision.
+9. Pour téléverser des images, utiliser atelier-upload-media en fournissant systématiquement un texte alternatif (alt_text).
+10. Pour faire relire un brouillon à l'utilisateur sans qu'il ait besoin de se connecter, lui fournir le lien signed généré ou appeler atelier-preview-link.
 
 Règles de construction Elementor
 - Conteneurs uniquement (Flexbox, Grille pour les rangées de cartes). Pas de section/colonne.

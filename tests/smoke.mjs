@@ -77,19 +77,43 @@ check('ouvre une session et envoie les instructions', async () => {
 	await rpc(ADMIN_AUTH, session, 'notifications/initialized');
 });
 
-check('liste les 6 outils Atelier', async () => {
+check('liste les 14 outils Atelier avec leurs annotations', async () => {
 	const res = await rpc(ADMIN_AUTH, session, 'tools/list');
 	const names = res.json.result.tools.map((t) => t.name).sort();
 	assert.deepEqual(names, [
+		'atelier-activity-log',
 		'atelier-audit-document',
+		'atelier-create-document',
 		'atelier-describe-widget',
+		'atelier-flush-cache',
 		'atelier-get-document',
 		'atelier-get-kit',
 		'atelier-list-documents',
+		'atelier-list-revisions',
+		'atelier-preview-link',
+		'atelier-restore-revision',
+		'atelier-save-document',
 		'atelier-site-info',
+		'atelier-upload-media',
 	]);
-	const readonly = res.json.result.tools.every((t) => t.annotations?.readOnlyHint === true);
-	assert.ok(readonly, 'tous les outils doivent être marqués lecture seule');
+
+	const writeTools = new Set([
+		'atelier-create-document',
+		'atelier-flush-cache',
+		'atelier-restore-revision',
+		'atelier-save-document',
+		'atelier-upload-media',
+	]);
+
+	for (const tool of res.json.result.tools) {
+		const isWrite = writeTools.has(tool.name);
+		const expectedReadOnly = !isWrite;
+		assert.equal(
+			tool.annotations?.readOnlyHint,
+			expectedReadOnly,
+			`Outil ${tool.name} : annotation readOnlyHint attendue ${expectedReadOnly}`
+		);
+	}
 });
 
 check('site-info détecte Elementor et les points de rupture', async () => {

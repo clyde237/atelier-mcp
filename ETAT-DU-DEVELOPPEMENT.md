@@ -73,17 +73,37 @@ Serveur d'autorisation OAuth 2.1 complet et conforme aux spécifications MCP et 
   - Page « Connexion » (`Atelier MCP` dans le menu d'admin) avec guides pas à pas et gestion des jetons.
 - **Suite de tests automatisée** (`npm run test:oauth`) : 12 vérifications de conformité réussies (100%).
 
+## Ce qui est fait — phase 3 (Écriture sûre Elementor)
+
+Ensemble complet d'outils d'écriture, de rollback et de gestion des médias via l'API native d'Elementor :
+
+- **`atelier-save-document`** :
+  - Concurrence optimiste obligatoire avec jeton de version `modified_gmt` : rejet immédiat (409) en cas de modification concurrente.
+  - Mode simulation `dry_run=true` : pré-audite statiquement l'arbre et valide la structure sans toucher à la base de données.
+  - Création automatique d'une révision WordPress préalable (`create_revision: true`) pour permettre un retour arrière instantané.
+  - Enregistrement par l'API Document d'Elementor, purge et recompilation du cache CSS (`files_manager->clear_cache()`).
+  - Lien d'aperçu signé retourné automatiquement.
+- **`atelier-create-document`** :
+  - Création de pages, articles ou templates Elementor avec statut configurable (`draft`, `publish`, etc.).
+  - Initialisation immédiate avec un arbre de conteneurs initial.
+- **`atelier-restore-revision` & `atelier-list-revisions`** :
+  - Liste chronologique des révisions avec identification de l'auteur et de l'horodatage.
+  - Rollback complet et sécurisé appliquant les métadonnées antérieures et régénérant le CSS.
+- **`atelier-upload-media`** :
+  - Téléversement d'images / icônes (formats jpg, png, webp, svg, gif) en Base64.
+  - Texte alternatif (`alt_text`) obligatoire pour l'accessibilité (zéro image muette).
+  - Génération automatique des miniatures et insertion dans la médiathèque WordPress.
+- **`atelier-preview-link` (Lien d'aperçu signé)** :
+  - Signature HMAC SHA-256 temporaire permettant à quiconque de prévisualiser un brouillon sans avoir de compte WordPress.
+- **`atelier-flush-cache`** :
+  - Purge manuelle des fichiers CSS et caches compilés.
+- **`atelier-activity-log` (Traçabilité & audit trail)** :
+  - Journal horodaté conservant l'historique des actions, des utilisateurs et des révisions créées.
+- **Suite de tests automatisée** (`npm run test:write`) : 12 vérifications d'écriture réussies (100%).
+
 ## Ce qui manque
 
-### Phase 3 — Écriture sûre (Elementor — prochaine étape)
-
-- `save-document` via l'API PHP d'Elementor (révision WordPress, cache et CSS régénérés), avec **dry-run** et **jeton de version** (`modified_gmt`) obligatoires.
-- `create-document`, `restore-revision`, `flush-cache`, `upload-media`.
-- **Lien d'aperçu signé** pour voir un brouillon sans être connecté.
-- **Journal** des modifications.
-- Premier usage réel : conversion de la page d'accueil de Saint-Gilbert en conteneurs.
-
-### Phase 4 — Elementor Pro
+### Phase 4 — Elementor Pro (prochaine étape)
 
 Templates du Theme Builder (en-tête, pied de page, articles, archives) et leurs conditions d'affichage, popups, widgets globaux.
 

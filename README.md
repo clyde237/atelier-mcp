@@ -6,18 +6,24 @@ Les outils sont déclarés avec l'**Abilities API** de WordPress et exposés en 
 
 ## État
 
-Version 0.1.0 : outils en **lecture seule**, Elementor uniquement.
+Version 0.2.0 : outils de lecture, audit, écriture, révisions et médias (Elementor).
 
-| Outil MCP | Rôle |
-|---|---|
-| `atelier-site-info` | Versions WordPress/Elementor/Pro, expériences actives, points de rupture, thème, page d'accueil |
-| `atelier-list-documents` | Pages, articles, templates modifiables par l'utilisateur, avec l'éditeur utilisé |
-| `atelier-get-document` | Plan lisible d'une page ou arbre Elementor complet (ou un seul élément) |
-| `atelier-describe-widget` | Noms exacts des réglages d'un widget ou d'un conteneur sur ce site |
-| `atelier-get-kit` | Couleurs et typographies globales, largeur de conteneur |
-| `atelier-audit-document` | Structure ancienne, code personnalisé, responsive, titres, images, liens |
-
-Prévu : écriture via l'API PHP d'Elementor (révisions, cache), lien d'aperçu signé, OAuth 2.1 pour claude.ai web, Elementor Pro (Theme Builder), Gutenberg.
+| Outil MCP | Rôle | Type |
+|---|---|---|
+| `atelier-site-info` | Versions WordPress/Elementor/Pro, expériences actives, points de rupture, thème | Lecture |
+| `atelier-list-documents` | Pages, articles, templates modifiables avec l'éditeur utilisé | Lecture |
+| `atelier-get-document` | Plan lisible d'une page ou arbre Elementor complet (avec modified_gmt) | Lecture |
+| `atelier-describe-widget` | Noms exacts des réglages d'un widget ou d'un conteneur sur ce site | Lecture |
+| `atelier-get-kit` | Couleurs et typographies globales, largeur de conteneur | Lecture |
+| `atelier-audit-document` | Audit statique : conteneurs, responsive, titres, accessibilité | Lecture |
+| `atelier-save-document` | Enregistrement sécurisé avec concurrence optimiste (modified_gmt), dry-run et révisions | Écriture |
+| `atelier-create-document` | Création de pages, articles ou templates Elementor avec arbre initial | Écriture |
+| `atelier-list-revisions` | Historique des révisions d'un document avec auteur et dates | Lecture |
+| `atelier-restore-revision` | Restauration d'une révision passée (rollback immédiat) | Écriture |
+| `atelier-preview-link` | Génération d'une URL signée temporaire pour prévisualisation sans compte | Lecture |
+| `atelier-upload-media` | Téléversement d'image Base64 dans la médiathèque avec alt obligatoire | Écriture |
+| `atelier-flush-cache` | Purge et recompilation des fichiers CSS et caches Elementor | Écriture |
+| `atelier-activity-log` | Journal d'audit chronologique des actions effectuées sur le site | Lecture |
 
 ## Prérequis
 
