@@ -120,11 +120,33 @@ Gestion avancée des fonctionnalités professionnelles Elementor (Theme Builder,
   - Intégration complète avec les conditions d'affichage du Theme Builder.
 - **Suite de tests automatisée** (`npm run test:pro`) : 12 vérifications réussies (100%).
 
+## Ce qui est fait — phase 5 (Support Gutenberg & theme.json)
+
+Gestion complète de l'éditeur de blocs natif de WordPress et de son système de design :
+
+- **`atelier-gutenberg-blocks` (Découverte et attributs des blocs)** :
+  - Liste de tous les types de blocs natifs et tiers enregistrés avec filtrage par catégorie ou recherche textuelle.
+  - Inspection détaillée (`describe`) de chaque bloc : schéma d'attributs exacts, valeurs par défaut, capacités (`supports`) et relations parent/enfant.
+- **`atelier-gutenberg-document` (Lecture & Arbre AST)** :
+  - Détection automatique du mode `editor="gutenberg"` sur les pages et articles.
+  - Rendu en plan synthétique hiérarchique lisible (`outline`) avec statistiques de profondeur et de typologie.
+  - Extraction de l'arbre JSON structuré de blocs (`blocks`) ou du balisage brut (`raw`).
+  - Préservation du jeton de concurrence `modified_gmt`.
+- **`atelier-gutenberg-save` (Sauvegarde sécurisée & Concurrence optimiste)** :
+  - Contrôle anti-écrasement strict basé sur le `modified_gmt` : rejet immédiat (409) en cas de modification concurrente.
+  - Mode simulation `dry_run=true` pour prévisualiser l'outline et vérifier la syntaxe sans toucher à la base de données.
+  - Sérialisation conforme native (`serialize_blocks`) et création systématique d'une révision WordPress préalable pour rollback.
+- **`atelier-gutenberg-patterns` (Compositions de blocs)** :
+  - Exploration des catégories et compositions préconçues (`patterns`) fournies par le thème ou les extensions.
+  - Extraction du contenu de composition prêt à l'emploi avec outline et statistiques.
+- **`atelier-theme-json` (Système de design global)** :
+  - Inspection de la configuration globale définie par `theme.json` : palette de couleurs, échelles typographiques, règles d'espacement et largeurs de conteneurs (`content_size`, `wide_size`).
+  - Liste des modèles de thèmes à blocs (`wp_template`) et parties de modèles (`wp_template_part`).
+- **Suite de tests automatisée** (`npm run test:gutenberg`) : 12 vérifications réussies (100%).
+
 ## Ce qui manque
 
-### Phase 5 — Gutenberg (prochaine étape)
-
-Lecture et écriture des blocs, description des blocs installés, compositions, `theme.json`, templates des thèmes à blocs.
+### Phase 6 — Transversal & Distribution (prochaine étape)
 
 ### Transversal
 

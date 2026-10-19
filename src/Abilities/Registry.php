@@ -56,6 +56,11 @@ final class Registry {
 				new ThemeBuilder(),
 				new GlobalWidgets(),
 				new Popups(),
+				new GutenbergBlocks(),
+				new GetGutenbergDocument(),
+				new SaveGutenbergDocument(),
+				new GutenbergPatterns(),
+				new ThemeJson(),
 			);
 		}
 		return self::$abilities;

@@ -6,7 +6,7 @@ Les outils sont déclarés avec l'**Abilities API** de WordPress et exposés en 
 
 ## État
 
-Version 0.3.0 : outils de lecture, audit, écriture, révisions, médias et Elementor Pro.
+Version 0.4.0 : outils de lecture, audit, écriture, révisions, médias, Elementor Pro et Gutenberg.
 
 | Outil MCP | Rôle | Type |
 |---|---|---|
@@ -27,6 +27,11 @@ Version 0.3.0 : outils de lecture, audit, écriture, révisions, médias et Elem
 | `atelier-theme-builder` | Gestion des modèles Theme Builder (header, footer, single, etc.) et conditions d'affichage | Écriture |
 | `atelier-global-widgets` | Création, lecture et référencement de widgets globaux synchronisés | Écriture |
 | `atelier-popups` | Création et configuration des popups (déclencheurs scroll/exit-intent, ciblage, timing) | Écriture |
+| `atelier-gutenberg-blocks` | Exploration des types de blocs natifs et inspection de leurs attributs exacts | Lecture |
+| `atelier-gutenberg-document` | Lecture d'un document Gutenberg (plan hiérarchique, arbre JSON ou balisage brut) | Lecture |
+| `atelier-gutenberg-save` | Enregistrement sécurisé de blocs Gutenberg avec concurrence optimiste (modified_gmt) | Écriture |
+| `atelier-gutenberg-patterns` | Découverte et extraction des compositions prédéfinies du thème (patterns) | Lecture |
+| `atelier-theme-json` | Système de design theme.json (palette globale, typographies, espacements, modèles) | Lecture |
 
 ## Prérequis
 
@@ -67,6 +72,7 @@ npm run test:smoke     # test de bout en bout du serveur MCP (12 vérifications)
 npm run test:oauth     # test de bout en bout OAuth 2.1 & tokens Bearer (12 vérifications)
 npm run test:write     # test de bout en bout des écritures sécurisées (12 vérifications)
 npm run test:pro       # test de bout en bout Elementor Pro & Theme Builder (12 vérifications)
+npm run test:gutenberg # test de bout en bout Gutenberg & theme.json (12 vérifications)
 npm run env:stop
 ```
 

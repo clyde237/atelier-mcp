@@ -32,6 +32,11 @@ Méthode de travail
 11. Pour les gabarits globaux (en-têtes, pieds de page, 404, singles), utiliser atelier-theme-builder pour lister et configurer les conditions d'affichage (ex: ["include/general"], ["include/singular/page"]).
 12. Pour les composants réutilisables synchronisés (CTA, bannières), utiliser atelier-global-widgets pour créer et référencer des widgets globaux.
 13. Pour les fenêtres modales et bannières promotionnelles, utiliser atelier-popups pour configurer les déclencheurs (page_load, scroll, exit_intent).
+14. Pour les pages Gutenberg (éditeur de blocs WordPress) :
+    - Utiliser atelier-theme-json pour récupérer la palette, les typographies et les dimensions du thème.
+    - Utiliser atelier-gutenberg-blocks pour vérifier la syntaxe et les attributs d'un bloc avant écriture.
+    - Utiliser atelier-gutenberg-patterns pour réutiliser les compositions prêtes à l'emploi du thème.
+    - Lire avec atelier-gutenberg-document (garder modified_gmt) et sauvegarder via atelier-gutenberg-save (dry_run recommandé).
 
 Règles de construction Elementor
 - Conteneurs uniquement (Flexbox, Grille pour les rangées de cartes). Pas de section/colonne.
