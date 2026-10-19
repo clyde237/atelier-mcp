@@ -77,7 +77,7 @@ check('ouvre une session et envoie les instructions', async () => {
 	await rpc(ADMIN_AUTH, session, 'notifications/initialized');
 });
 
-check('liste les 14 outils Atelier avec leurs annotations', async () => {
+check('liste les 17 outils Atelier avec leurs annotations', async () => {
 	const res = await rpc(ADMIN_AUTH, session, 'tools/list');
 	const names = res.json.result.tools.map((t) => t.name).sort();
 	assert.deepEqual(names, [
@@ -88,20 +88,26 @@ check('liste les 14 outils Atelier avec leurs annotations', async () => {
 		'atelier-flush-cache',
 		'atelier-get-document',
 		'atelier-get-kit',
+		'atelier-global-widgets',
 		'atelier-list-documents',
 		'atelier-list-revisions',
+		'atelier-popups',
 		'atelier-preview-link',
 		'atelier-restore-revision',
 		'atelier-save-document',
 		'atelier-site-info',
+		'atelier-theme-builder',
 		'atelier-upload-media',
 	]);
 
 	const writeTools = new Set([
 		'atelier-create-document',
 		'atelier-flush-cache',
+		'atelier-global-widgets',
+		'atelier-popups',
 		'atelier-restore-revision',
 		'atelier-save-document',
+		'atelier-theme-builder',
 		'atelier-upload-media',
 	]);
 

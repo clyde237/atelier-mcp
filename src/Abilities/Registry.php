@@ -53,6 +53,9 @@ final class Registry {
 				new UploadMedia(),
 				new PreviewLink(),
 				new GetActivityLog(),
+				new ThemeBuilder(),
+				new GlobalWidgets(),
+				new Popups(),
 			);
 		}
 		return self::$abilities;

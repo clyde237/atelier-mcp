@@ -11,6 +11,7 @@
 		"lint:php": "docker run --rm -v \"$PWD\":/app -w /app --entrypoint sh wordpress:php8.2 -c 'find . -name \"*.php\" -not -path \"./vendor/*\" -not -path \"./node_modules/*\" -not -path \"./.dev-cache/*\" -print0 | xargs -0 -n1 php -l > /tmp/lint.txt; status=$?; grep -v \"^No syntax errors\" /tmp/lint.txt; exit $status'",
 		"test:smoke": "bash tests/smoke.sh",
 		"test:oauth": "bash tests/oauth.sh",
-		"test:write": "bash tests/write.sh"
+		"test:write": "bash tests/write.sh",
+		"test:pro": "bash tests/pro.sh"
 	}
 }

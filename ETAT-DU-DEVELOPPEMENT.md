@@ -101,13 +101,28 @@ Ensemble complet d'outils d'écriture, de rollback et de gestion des médias via
   - Journal horodaté conservant l'historique des actions, des utilisateurs et des révisions créées.
 - **Suite de tests automatisée** (`npm run test:write`) : 12 vérifications d'écriture réussies (100%).
 
+## Ce qui est fait — phase 4 (Support Elementor Pro)
+
+Gestion avancée des fonctionnalités professionnelles Elementor (Theme Builder, conditions d'affichage, widgets globaux, popups) :
+
+- **`atelier-theme-builder` (Gabarits & Conditions d'affichage)** :
+  - Emplacements supportés (`locations`) : `header`, `footer`, `single`, `single-post`, `single-page`, `archive`, `search-results`, `error-404`, `popup`, `section`.
+  - Création de gabarits Theme Builder (`create`) avec enregistrement simultané dans le CPT `elementor_library`, la métadonnée `_elementor_template_type` et la taxonomie native `elementor_library_type`.
+  - Configuration granulaire des conditions d'affichage (`set_conditions`) : syntaxe hiérarchique standard Elementor Pro (`include/general`, `include/singular/page`, `exclude/...`).
+  - Synchronisation bidirectionnelle : méta post individuelle `_elementor_conditions` et table d'index / cache global Elementor Pro `elementor_pro_theme_builder_conditions`.
+- **`atelier-global-widgets` (Widgets globaux synchronisés)** :
+  - Création (`create`) de widgets globaux à partir de n'importe quel élément standard (`heading`, `button`, etc.).
+  - Génération automatique du code d'insertion réutilisable (`usage_snippet` avec `elType="widget"`, `widgetType="global"`, `templateID`).
+  - Consultation (`get`) et listing (`list`) des widgets globaux du site.
+- **`atelier-popups` (Fenêtres modales & Déclencheurs)** :
+  - Création (`create`) de popups avec définition immédiate des déclencheurs et de l'arbre de conteneurs.
+  - Configuration avancée (`configure`) : déclencheurs événementiels (`page_load`, `scroll`, `exit_intent`, `inactivity`) et règles de fréquence (`views_count`, etc.).
+  - Intégration complète avec les conditions d'affichage du Theme Builder.
+- **Suite de tests automatisée** (`npm run test:pro`) : 12 vérifications réussies (100%).
+
 ## Ce qui manque
 
-### Phase 4 — Elementor Pro (prochaine étape)
-
-Templates du Theme Builder (en-tête, pied de page, articles, archives) et leurs conditions d'affichage, popups, widgets globaux.
-
-### Phase 5 — Gutenberg
+### Phase 5 — Gutenberg (prochaine étape)
 
 Lecture et écriture des blocs, description des blocs installés, compositions, `theme.json`, templates des thèmes à blocs.
 

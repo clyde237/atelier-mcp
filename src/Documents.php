@@ -79,6 +79,11 @@ final class Documents {
 			$summary['is_front_page'] = true;
 		}
 
+		$conditions = get_post_meta( $post->ID, '_elementor_conditions', true );
+		if ( ! empty( $conditions ) && is_array( $conditions ) ) {
+			$summary['display_conditions'] = array_values( $conditions );
+		}
+
 		$summary['preview_url'] = Elementor\PreviewSigner::generate_url( $post->ID );
 		return $summary;
 	}

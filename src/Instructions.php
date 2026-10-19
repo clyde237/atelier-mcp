@@ -29,6 +29,9 @@ Méthode de travail
 8. En cas de problème ou demande de rollback, utiliser atelier-list-revisions puis atelier-restore-revision.
 9. Pour téléverser des images, utiliser atelier-upload-media en fournissant systématiquement un texte alternatif (alt_text).
 10. Pour faire relire un brouillon à l'utilisateur sans qu'il ait besoin de se connecter, lui fournir le lien signed généré ou appeler atelier-preview-link.
+11. Pour les gabarits globaux (en-têtes, pieds de page, 404, singles), utiliser atelier-theme-builder pour lister et configurer les conditions d'affichage (ex: ["include/general"], ["include/singular/page"]).
+12. Pour les composants réutilisables synchronisés (CTA, bannières), utiliser atelier-global-widgets pour créer et référencer des widgets globaux.
+13. Pour les fenêtres modales et bannières promotionnelles, utiliser atelier-popups pour configurer les déclencheurs (page_load, scroll, exit_intent).
 
 Règles de construction Elementor
 - Conteneurs uniquement (Flexbox, Grille pour les rangées de cartes). Pas de section/colonne.

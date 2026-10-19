@@ -6,7 +6,7 @@ Les outils sont déclarés avec l'**Abilities API** de WordPress et exposés en 
 
 ## État
 
-Version 0.2.0 : outils de lecture, audit, écriture, révisions et médias (Elementor).
+Version 0.3.0 : outils de lecture, audit, écriture, révisions, médias et Elementor Pro.
 
 | Outil MCP | Rôle | Type |
 |---|---|---|
@@ -24,6 +24,9 @@ Version 0.2.0 : outils de lecture, audit, écriture, révisions et médias (Elem
 | `atelier-upload-media` | Téléversement d'image Base64 dans la médiathèque avec alt obligatoire | Écriture |
 | `atelier-flush-cache` | Purge et recompilation des fichiers CSS et caches Elementor | Écriture |
 | `atelier-activity-log` | Journal d'audit chronologique des actions effectuées sur le site | Lecture |
+| `atelier-theme-builder` | Gestion des modèles Theme Builder (header, footer, single, etc.) et conditions d'affichage | Écriture |
+| `atelier-global-widgets` | Création, lecture et référencement de widgets globaux synchronisés | Écriture |
+| `atelier-popups` | Création et configuration des popups (déclencheurs scroll/exit-intent, ciblage, timing) | Écriture |
 
 ## Prérequis
 
@@ -62,6 +65,8 @@ npm run env:start      # WordPress 7.1 sur http://localhost:8888 (admin / passwo
 npm run lint:php       # php -l sur tous les fichiers
 npm run test:smoke     # test de bout en bout du serveur MCP (12 vérifications)
 npm run test:oauth     # test de bout en bout OAuth 2.1 & tokens Bearer (12 vérifications)
+npm run test:write     # test de bout en bout des écritures sécurisées (12 vérifications)
+npm run test:pro       # test de bout en bout Elementor Pro & Theme Builder (12 vérifications)
 npm run env:stop
 ```
 
