@@ -23,6 +23,7 @@ final class Server {
 	public static function hook(): void {
 		add_action( 'rest_api_init', array( self::class, 'register_routes' ) );
 		add_action( 'init', array( self::class, 'handle_well_known_rewrites' ) );
+		add_filter( 'rest_pre_serve_request', array( self::class, 'handle_cors' ), 10, 4 );
 	}
 
 	/**
@@ -30,13 +31,14 @@ final class Server {
 	 */
 	public static function handle_well_known_rewrites(): void {
 		$request_uri = $_SERVER['REQUEST_URI'] ?? '';
-		$path        = wp_parse_url( $request_uri, PHP_URL_PATH );
+		$path        = (string) wp_parse_url( $request_uri, PHP_URL_PATH );
+		$path        = untrailingslashit( $path );
 
-		if ( '/.well-known/oauth-protected-resource' === $path ) {
+		if ( preg_match( '#/\.well-known/oauth-protected-resource$#', $path ) ) {
 			self::send_json_response( self::get_protected_resource_metadata() );
 		}
 
-		if ( '/.well-known/oauth-authorization-server' === $path || '/.well-known/openid-configuration' === $path ) {
+		if ( preg_match( '#/\.well-known/(oauth-authorization-server|openid-configuration)$#', $path ) ) {
 			self::send_json_response( self::get_authorization_server_metadata() );
 		}
 	}
@@ -52,11 +54,29 @@ final class Server {
 				'permission_callback' => '__return_true',
 			)
 		);
+		register_rest_route(
+			self::ROUTE_NAMESPACE,
+			'/oauth-protected-resource',
+			array(
+				'methods'             => WP_REST_Server::READABLE,
+				'callback'            => array( self::class, 'rest_protected_resource_metadata' ),
+				'permission_callback' => '__return_true',
+			)
+		);
 
 		// RFC 8414 : Métadonnées du serveur d'autorisation.
 		register_rest_route(
 			self::ROUTE_NAMESPACE,
 			'/authorization-server',
+			array(
+				'methods'             => WP_REST_Server::READABLE,
+				'callback'            => array( self::class, 'rest_authorization_server_metadata' ),
+				'permission_callback' => '__return_true',
+			)
+		);
+		register_rest_route(
+			self::ROUTE_NAMESPACE,
+			'/oauth-authorization-server',
 			array(
 				'methods'             => WP_REST_Server::READABLE,
 				'callback'            => array( self::class, 'rest_authorization_server_metadata' ),
@@ -167,8 +187,8 @@ final class Server {
 			return new WP_Error( 'invalid_grant', 'client_id ne correspond pas au code d\'autorisation émis.', array( 'status' => 400 ) );
 		}
 
-		// Vérification de la redirect_uri.
-		if ( ! empty( $code_data['redirect_uri'] ) && ! hash_equals( (string) $code_data['redirect_uri'], $redirect_uri ) ) {
+		// Vérification de la redirect_uri (tolérance sur le slash terminal).
+		if ( ! empty( $code_data['redirect_uri'] ) && ! empty( $redirect_uri ) && untrailingslashit( (string) $code_data['redirect_uri'] ) !== untrailingslashit( $redirect_uri ) ) {
 			return new WP_Error( 'invalid_grant', 'redirect_uri ne correspond pas.', array( 'status' => 400 ) );
 		}
 
@@ -179,7 +199,12 @@ final class Server {
 		}
 
 		$user_id = (int) $code_data['user_id'];
-		$scopes  = (array) $code_data['scopes'];
+		$scopes  = (array) ( $code_data['scopes'] ?? array() );
+		if ( empty( $scopes ) ) {
+			$scopes = array( TokenContext::SCOPE_READ, TokenContext::SCOPE_WRITE );
+		} elseif ( ! in_array( TokenContext::SCOPE_READ, $scopes, true ) ) {
+			$scopes[] = TokenContext::SCOPE_READ;
+		}
 
 		$tokens = TokenStore::create_oauth_tokens( $user_id, $client_id, $scopes );
 		return new WP_REST_Response( $tokens, 200 );
@@ -229,10 +254,18 @@ final class Server {
 	 * @return array<string, mixed>
 	 */
 	public static function get_protected_resource_metadata(): array {
-		$site_url = site_url();
+		$mcp_url     = untrailingslashit( rest_url( 'atelier/mcp' ) );
+		$auth_server = untrailingslashit( site_url() );
+
+		// Tolérance : si le client demande une resource explicite avec slash terminal correspondant.
+		$requested_resource = isset( $_GET['resource'] ) ? esc_url_raw( wp_unslash( $_GET['resource'] ) ) : '';
+		$resource = ( ! empty( $requested_resource ) && untrailingslashit( $requested_resource ) === $mcp_url )
+			? $requested_resource
+			: $mcp_url;
+
 		return array(
-			'resource'              => $site_url,
-			'authorization_servers' => array( $site_url ),
+			'resource'              => $resource,
+			'authorization_servers' => array( $auth_server ),
 			'scopes_supported'      => array(
 				TokenContext::SCOPE_READ,
 				TokenContext::SCOPE_WRITE,
@@ -249,7 +282,7 @@ final class Server {
 	 * @return array<string, mixed>
 	 */
 	public static function get_authorization_server_metadata(): array {
-		$site_url = site_url();
+		$site_url = untrailingslashit( site_url() );
 		return array(
 			'issuer'                                => $site_url,
 			'authorization_endpoint'                => rest_url( self::ROUTE_NAMESPACE . '/authorize' ),
@@ -268,10 +301,43 @@ final class Server {
 		);
 	}
 
+	/**
+	 * Assure les en-têtes CORS pour toutes les requêtes OAuth et MCP (support navigateurs et clients web).
+	 *
+	 * @param bool             $served
+	 * @param WP_REST_Response $result
+	 * @param WP_REST_Request  $request
+	 * @param WP_REST_Server   $server
+	 * @return bool
+	 */
+	public static function handle_cors( $served, $result, WP_REST_Request $request, WP_REST_Server $server ): bool {
+		$route = $request->get_route();
+		if ( 0 !== strpos( $route, '/atelier' ) ) {
+			return $served;
+		}
+
+		header( 'Access-Control-Allow-Origin: *' );
+		header( 'Access-Control-Allow-Methods: GET, POST, PUT, DELETE, OPTIONS' );
+		header( 'Access-Control-Allow-Headers: Authorization, Content-Type, Accept, X-Requested-With, X-WP-Nonce, Mcp-Session-Id' );
+		header( 'Access-Control-Expose-Headers: WWW-Authenticate, Mcp-Session-Id' );
+
+		if ( 'OPTIONS' === ( $_SERVER['REQUEST_METHOD'] ?? '' ) ) {
+			status_header( 204 );
+			return true;
+		}
+
+		return $served;
+	}
+
 	private static function send_json_response( array $data ): void {
 		header( 'Content-Type: application/json; charset=UTF-8' );
 		header( 'Access-Control-Allow-Origin: *' );
-		header( 'Access-Control-Allow-Methods: GET, OPTIONS' );
+		header( 'Access-Control-Allow-Methods: GET, POST, OPTIONS' );
+		header( 'Access-Control-Allow-Headers: Authorization, Content-Type, Accept, X-Requested-With' );
+		if ( 'OPTIONS' === ( $_SERVER['REQUEST_METHOD'] ?? '' ) ) {
+			status_header( 204 );
+			exit;
+		}
 		echo (string) wp_json_encode( $data, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES );
 		exit;
 	}

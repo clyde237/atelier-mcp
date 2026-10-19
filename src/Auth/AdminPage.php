@@ -237,6 +237,55 @@ final class AdminPage {
 					</table>
 				<?php endif; ?>
 			</div>
+
+			<!-- Section Mises à jour depuis GitHub -->
+			<div class="card" style="margin-top: 24px; max-width: 1000px; padding: 20px;">
+				<h2 style="margin-top: 0; display: flex; align-items: center; gap: 8px;">
+					<span class="dashicons dashicons-update"></span>
+					<?php esc_html_e( 'Mises à jour du plugin depuis GitHub', 'atelier-mcp' ); ?>
+				</h2>
+				<p>
+					<?php
+					printf(
+						/* translators: %s: version string */
+						esc_html__( 'Version actuellement installée : %s', 'atelier-mcp' ),
+						'<strong>' . esc_html( ATELIER_MCP_VERSION ) . '</strong>'
+					);
+					?>
+				</p>
+				<p class="description">
+					<?php esc_html_e( 'Pour mettre à jour Atelier MCP lors de nouvelles modifications sans le désinstaller :', 'atelier-mcp' ); ?>
+				</p>
+				<ol style="margin-left: 20px; line-height: 1.8;">
+					<li>
+						<?php esc_html_e( 'Téléchargez la dernière archive zip depuis le dépôt :', 'atelier-mcp' ); ?>
+						<a href="https://github.com/clyde237/atelier-mcp/archive/refs/heads/main.zip" class="button button-secondary" style="margin-left: 8px;" target="_blank" rel="noopener noreferrer">
+							📥 <?php esc_html_e( 'Télécharger atelier-mcp (.zip)', 'atelier-mcp' ); ?>
+						</a>
+					</li>
+					<li>
+						<?php esc_html_e( 'Rendez-vous dans', 'atelier-mcp' ); ?>
+						<a href="<?php echo esc_url( admin_url( 'plugin-install.php?tab=upload' ) ); ?>">
+							<strong><?php esc_html_e( 'Extensions › Téléverser une extension', 'atelier-mcp' ); ?></strong>
+						</a>
+						<?php esc_html_e( 'et sélectionnez l\'archive.', 'atelier-mcp' ); ?>
+					</li>
+					<li>
+						<?php esc_html_e( 'Cliquez sur « Remplacer la version actuelle par la version téléversée ». Vos jetons, permissions et réglages sont intégralement conservés !', 'atelier-mcp' ); ?>
+					</li>
+				</ol>
+				<div style="margin-top: 16px; display: flex; gap: 12px; align-items: center;">
+					<a href="<?php echo esc_url( wp_nonce_url( admin_url( 'plugins.php?atelier_check_update=1' ), 'atelier_check_update' ) ); ?>" class="button button-primary">
+						🔄 <?php esc_html_e( 'Vérifier les mises à jour maintenant', 'atelier-mcp' ); ?>
+					</a>
+					<a href="https://github.com/clyde237/atelier-mcp" class="button" target="_blank" rel="noopener noreferrer">
+						<?php esc_html_e( 'Voir le dépôt GitHub', 'atelier-mcp' ); ?>
+					</a>
+					<a href="https://github.com/clyde237/atelier-mcp/releases" class="button" target="_blank" rel="noopener noreferrer">
+						<?php esc_html_e( 'Releases & Changelog', 'atelier-mcp' ); ?>
+					</a>
+				</div>
+			</div>
 		</div>
 		<?php
 	}

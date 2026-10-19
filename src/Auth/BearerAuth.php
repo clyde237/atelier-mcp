@@ -36,12 +36,22 @@ final class BearerAuth {
 			$header = (string) $_SERVER['HTTP_AUTHORIZATION'];
 		} elseif ( ! empty( $_SERVER['REDIRECT_HTTP_AUTHORIZATION'] ) ) {
 			$header = (string) $_SERVER['REDIRECT_HTTP_AUTHORIZATION'];
+		} elseif ( ! empty( $_SERVER['PHP_AUTH_BEARER'] ) ) {
+			$header = 'Bearer ' . (string) $_SERVER['PHP_AUTH_BEARER'];
 		} elseif ( function_exists( 'apache_request_headers' ) ) {
 			$headers = apache_request_headers();
 			if ( ! empty( $headers['Authorization'] ) ) {
 				$header = (string) $headers['Authorization'];
 			} elseif ( ! empty( $headers['authorization'] ) ) {
 				$header = (string) $headers['authorization'];
+			}
+		} elseif ( function_exists( 'getallheaders' ) ) {
+			$headers = getallheaders();
+			foreach ( $headers as $key => $val ) {
+				if ( 0 === strcasecmp( (string) $key, 'Authorization' ) ) {
+					$header = (string) $val;
+					break;
+				}
 			}
 		}
 
@@ -117,9 +127,14 @@ final class BearerAuth {
 
 		// Cible les requêtes vers le point d'accès Atelier MCP.
 		if ( 0 === strpos( $route, '/atelier/mcp' ) ) {
-			if ( 401 === $response->get_status() ) {
-				$metadata_url = site_url( '/.well-known/oauth-protected-resource' );
-				$response->header( 'WWW-Authenticate', sprintf( 'Bearer resource_metadata="%s"', esc_url_raw( $metadata_url ) ) );
+			$status = $response->get_status();
+			if ( 401 === $status || 403 === $status ) {
+				$metadata_url = rest_url( Server::ROUTE_NAMESPACE . '/oauth-protected-resource' );
+				if ( 403 === $status ) {
+					$response->header( 'WWW-Authenticate', sprintf( 'Bearer error="insufficient_scope", scope="atelier:read atelier:write", resource_metadata="%s"', esc_url_raw( $metadata_url ) ) );
+				} else {
+					$response->header( 'WWW-Authenticate', sprintf( 'Bearer resource_metadata="%s"', esc_url_raw( $metadata_url ) ) );
+				}
 			}
 		}
 

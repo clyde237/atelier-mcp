@@ -27,6 +27,40 @@ final class ClientStore {
 				'redirect_uris'              => array(
 					'https://claude.ai/api/mcp/auth_callback',
 					'https://claude.com/api/mcp/auth_callback',
+					'https://claude.ai/oauth/callback',
+				),
+				'token_endpoint_auth_method' => 'none',
+				'type'                       => 'predefined',
+			),
+			'claude'      => array(
+				'client_id'                  => 'claude',
+				'client_name'                => 'Claude',
+				'redirect_uris'              => array(
+					'https://claude.ai/api/mcp/auth_callback',
+					'https://claude.com/api/mcp/auth_callback',
+					'https://claude.ai/oauth/callback',
+				),
+				'token_endpoint_auth_method' => 'none',
+				'type'                       => 'predefined',
+			),
+			'claude.ai'   => array(
+				'client_id'                  => 'claude.ai',
+				'client_name'                => 'Claude.ai',
+				'redirect_uris'              => array(
+					'https://claude.ai/api/mcp/auth_callback',
+					'https://claude.com/api/mcp/auth_callback',
+					'https://claude.ai/oauth/callback',
+				),
+				'token_endpoint_auth_method' => 'none',
+				'type'                       => 'predefined',
+			),
+			'https://claude.ai' => array(
+				'client_id'                  => 'https://claude.ai',
+				'client_name'                => 'Claude.ai',
+				'redirect_uris'              => array(
+					'https://claude.ai/api/mcp/auth_callback',
+					'https://claude.com/api/mcp/auth_callback',
+					'https://claude.ai/oauth/callback',
 				),
 				'token_endpoint_auth_method' => 'none',
 				'type'                       => 'predefined',
@@ -66,9 +100,11 @@ final class ClientStore {
 	/**
 	 * Résout un client par son client_id.
 	 *
+	 * @param string      $client_id
+	 * @param string|null $redirect_uri Optionnel, permet d'autoriser automatiquement Claude.ai
 	 * @return array<string, mixed>|null
 	 */
-	public static function get_client( string $client_id ): ?array {
+	public static function get_client( string $client_id, ?string $redirect_uri = null ): ?array {
 		if ( empty( $client_id ) ) {
 			return null;
 		}
@@ -87,7 +123,30 @@ final class ClientStore {
 
 		// 3. Résolution par document de métadonnées CIMD (si client_id est une URL HTTPS).
 		if ( 0 === strpos( $client_id, 'https://' ) ) {
-			return self::resolve_cimd_client( $client_id );
+			$cimd = self::resolve_cimd_client( $client_id );
+			if ( $cimd ) {
+				return $cimd;
+			}
+		}
+
+		// 4. Tolérance pour Claude.ai si le redirect_uri pointe vers les serveurs officiels d'Anthropic.
+		if ( ! empty( $redirect_uri ) ) {
+			$parsed = parse_url( $redirect_uri );
+			$host   = strtolower( $parsed['host'] ?? '' );
+			if ( 'claude.ai' === $host || 'claude.com' === $host ) {
+				return array(
+					'client_id'                  => $client_id,
+					'client_name'                => 'Claude.ai',
+					'redirect_uris'              => array(
+						'https://claude.ai/api/mcp/auth_callback',
+						'https://claude.com/api/mcp/auth_callback',
+						'https://claude.ai/oauth/callback',
+						$redirect_uri,
+					),
+					'token_endpoint_auth_method' => 'none',
+					'type'                       => 'predefined',
+				);
+			}
 		}
 
 		return null;
@@ -182,10 +241,13 @@ final class ClientStore {
 	 */
 	public static function validate_redirect_uri( array $client, string $requested_uri ): bool {
 		$allowed_uris = (array) ( $client['redirect_uris'] ?? array() );
+		$clean_req    = untrailingslashit( $requested_uri );
 
-		// 1. Exact match.
-		if ( in_array( $requested_uri, $allowed_uris, true ) ) {
-			return true;
+		// 1. Exact match (avec tolérance slash terminal).
+		foreach ( $allowed_uris as $allowed ) {
+			if ( untrailingslashit( (string) $allowed ) === $clean_req ) {
+				return true;
+			}
 		}
 
 		// 2. Loopback matching pour clients locaux (RFC 8252 : port variable sur localhost).

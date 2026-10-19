@@ -17,14 +17,14 @@ final class ConsentScreen {
 	 * Affiche ou traite la requête d'autorisation OAuth.
 	 */
 	public static function handle(): void {
-		// 1. Récupération des paramètres de la requête.
-		$client_id             = sanitize_text_field( wp_unslash( $_GET['client_id'] ?? '' ) );
-		$redirect_uri          = esc_url_raw( wp_unslash( $_GET['redirect_uri'] ?? '' ) );
-		$response_type         = sanitize_text_field( wp_unslash( $_GET['response_type'] ?? '' ) );
-		$scope                 = sanitize_text_field( wp_unslash( $_GET['scope'] ?? 'atelier:read atelier:write' ) );
-		$state                 = sanitize_text_field( wp_unslash( $_GET['state'] ?? '' ) );
-		$code_challenge        = sanitize_text_field( wp_unslash( $_GET['code_challenge'] ?? '' ) );
-		$code_challenge_method = sanitize_text_field( wp_unslash( $_GET['code_challenge_method'] ?? '' ) );
+		// 1. Récupération des paramètres de la requête (support GET et POST).
+		$client_id             = sanitize_text_field( wp_unslash( $_REQUEST['client_id'] ?? '' ) );
+		$redirect_uri          = esc_url_raw( wp_unslash( $_REQUEST['redirect_uri'] ?? '' ) );
+		$response_type         = sanitize_text_field( wp_unslash( $_REQUEST['response_type'] ?? '' ) );
+		$scope                 = sanitize_text_field( wp_unslash( $_REQUEST['scope'] ?? 'atelier:read atelier:write' ) );
+		$state                 = sanitize_text_field( wp_unslash( $_REQUEST['state'] ?? '' ) );
+		$code_challenge        = sanitize_text_field( wp_unslash( $_REQUEST['code_challenge'] ?? '' ) );
+		$code_challenge_method = sanitize_text_field( wp_unslash( $_REQUEST['code_challenge_method'] ?? '' ) );
 
 		// 2. Vérification de l'authentification WordPress de l'utilisateur.
 		if ( ! is_user_logged_in() ) {
@@ -43,7 +43,7 @@ final class ConsentScreen {
 		}
 
 		// 4. Validation du client.
-		$client = ClientStore::get_client( $client_id );
+		$client = ClientStore::get_client( $client_id, $redirect_uri );
 		if ( ! $client ) {
 			wp_die(
 				esc_html__( 'Client OAuth inconnu ou non autorisé.', 'atelier-mcp' ),
@@ -83,11 +83,19 @@ final class ConsentScreen {
 				$code      = bin2hex( random_bytes( 24 ) );
 				$code_hash = hash( 'sha256', $code );
 
+				$requested_scopes = array_filter( explode( ' ', $scope ) );
+				$granted_scopes   = array_unique(
+					array_merge(
+						array( TokenContext::SCOPE_READ, TokenContext::SCOPE_WRITE ),
+						$requested_scopes
+					)
+				);
+
 				$code_data = array(
-					'client_id'      => $client_id,
+					'client_id'      => $client['client_id'] ?? $client_id,
 					'user_id'        => get_current_user_id(),
 					'redirect_uri'   => $redirect_uri,
-					'scopes'         => array_filter( explode( ' ', $scope ) ),
+					'scopes'         => $granted_scopes,
 					'code_challenge' => $code_challenge,
 					'created_at'     => time(),
 				);
@@ -110,7 +118,7 @@ final class ConsentScreen {
 		}
 
 		// 8. Affichage de la page de consentement.
-		self::render_consent_page( $client, $scope, $redirect_uri, $state );
+		self::render_consent_page( $client, $scope, $redirect_uri, $state, $code_challenge, $code_challenge_method );
 		exit;
 	}
 
@@ -129,7 +137,7 @@ final class ConsentScreen {
 		exit;
 	}
 
-	private static function render_consent_page( array $client, string $scope, string $redirect_uri, string $state ): void {
+	private static function render_consent_page( array $client, string $scope, string $redirect_uri, string $state, string $code_challenge = '', string $code_challenge_method = '' ): void {
 		$user         = wp_get_current_user();
 		$client_name  = esc_html( $client['client_name'] ?? 'Assistant IA' );
 		$requested_scopes = array_filter( explode( ' ', $scope ) );
@@ -269,6 +277,13 @@ final class ConsentScreen {
 
 				<form method="post">
 					<?php wp_nonce_field( 'atelier_oauth_consent' ); ?>
+					<input type="hidden" name="client_id" value="<?php echo esc_attr( $client['client_id'] ?? '' ); ?>" />
+					<input type="hidden" name="redirect_uri" value="<?php echo esc_attr( $redirect_uri ); ?>" />
+					<input type="hidden" name="response_type" value="code" />
+					<input type="hidden" name="scope" value="<?php echo esc_attr( $scope ); ?>" />
+					<input type="hidden" name="state" value="<?php echo esc_attr( $state ); ?>" />
+					<input type="hidden" name="code_challenge" value="<?php echo esc_attr( $code_challenge ); ?>" />
+					<input type="hidden" name="code_challenge_method" value="<?php echo esc_attr( $code_challenge_method ); ?>" />
 					<div class="actions">
 						<button type="submit" name="action_type" value="deny" class="btn btn-secondary">
 							<?php esc_html_e( 'Refuser', 'atelier-mcp' ); ?>

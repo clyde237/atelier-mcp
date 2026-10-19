@@ -40,11 +40,23 @@ check('réponse 401 sur /atelier/mcp inclut le header WWW-Authenticate avec reso
 	assert.match(wwwAuth, /Bearer resource_metadata=".*oauth-protected-resource"/);
 });
 
+// 1b. En-têtes CORS et prévol OPTIONS
+check('prévol OPTIONS renvoie les en-têtes CORS nécessaires à Claude.ai', async () => {
+	const res = await fetch(`${OAUTH_BASE}/token`, {
+		method: 'OPTIONS',
+	});
+	assert.equal(res.status, 204);
+	assert.equal(res.headers.get('access-control-allow-origin'), '*');
+	const allowHeaders = res.headers.get('access-control-allow-headers');
+	assert.ok(allowHeaders && allowHeaders.includes('Authorization'));
+});
+
 // 2. Métadonnées RFC 9728
 check('métadonnées de la ressource protégée (RFC 9728)', async () => {
 	const res = await fetch(`${OAUTH_BASE}/protected-resource`);
 	assert.equal(res.status, 200);
 	const data = await res.json();
+	assert.equal(data.resource, MCP_ENDPOINT);
 	assert.ok(Array.isArray(data.authorization_servers));
 	assert.ok(Array.isArray(data.scopes_supported));
 	assert.ok(data.scopes_supported.includes('atelier:read'));

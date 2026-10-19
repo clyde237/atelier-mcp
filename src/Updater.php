@@ -27,6 +27,10 @@ final class Updater {
 		add_filter( 'pre_set_site_transient_update_plugins', array( self::class, 'check_update' ) );
 		add_filter( 'plugins_api', array( self::class, 'plugins_api' ), 20, 3 );
 		add_filter( 'upgrader_post_install', array( self::class, 'post_install' ), 10, 3 );
+		add_filter( 'plugin_action_links_' . plugin_basename( ATELIER_MCP_FILE ), array( self::class, 'add_action_links' ) );
+		add_filter( 'plugin_row_meta', array( self::class, 'add_row_meta' ), 10, 2 );
+		add_action( 'admin_init', array( self::class, 'handle_manual_update_check' ) );
+		add_action( 'admin_notices', array( self::class, 'display_update_checked_notice' ) );
 	}
 
 	/**
@@ -213,5 +217,96 @@ final class Updater {
 		}
 
 		return (string) ( $release['zipball_url'] ?? '' );
+	}
+
+	/**
+	 * Liens d'action affichés sous le nom du plugin dans la liste des extensions.
+	 *
+	 * @param string[] $links
+	 * @return string[]
+	 */
+	public static function add_action_links( array $links ): array {
+		$custom = array(
+			sprintf(
+				'<a href="%s">%s</a>',
+				esc_url( admin_url( 'admin.php?page=atelier-mcp-connect' ) ),
+				esc_html__( 'Connexion MCP', 'atelier-mcp' )
+			),
+			sprintf(
+				'<a href="%s" style="font-weight:600; color:#2271b1;">%s</a>',
+				esc_url( wp_nonce_url( admin_url( 'plugins.php?atelier_check_update=1' ), 'atelier_check_update' ) ),
+				esc_html__( 'Vérifier MàJ', 'atelier-mcp' )
+			),
+		);
+
+		return array_merge( $custom, $links );
+	}
+
+	/**
+	 * Métadonnées supplémentaires affichées à droite de la version du plugin.
+	 *
+	 * @param string[] $links
+	 * @param string   $file
+	 * @return string[]
+	 */
+	public static function add_row_meta( array $links, string $file ): array {
+		if ( $file !== plugin_basename( ATELIER_MCP_FILE ) ) {
+			return $links;
+		}
+
+		$links[] = sprintf(
+			'<a href="%s" target="_blank" rel="noopener noreferrer">%s</a>',
+			'https://github.com/' . self::GITHUB_REPO,
+			esc_html__( 'Dépôt GitHub', 'atelier-mcp' )
+		);
+
+		$links[] = sprintf(
+			'<a href="%s" target="_blank" rel="noopener noreferrer">%s</a>',
+			'https://github.com/' . self::GITHUB_REPO . '/archive/refs/heads/main.zip',
+			esc_html__( '📥 Télécharger ZIP à jour', 'atelier-mcp' )
+		);
+
+		$links[] = sprintf(
+			'<a href="%s" target="_blank" rel="noopener noreferrer">%s</a>',
+			'https://github.com/' . self::GITHUB_REPO . '/releases',
+			esc_html__( 'Releases', 'atelier-mcp' )
+		);
+
+		return $links;
+	}
+
+	/**
+	 * Déclenche une vérification manuelle forcée des mises à jour auprès de GitHub.
+	 */
+	public static function handle_manual_update_check(): void {
+		if ( ! isset( $_GET['atelier_check_update'] ) || '1' !== $_GET['atelier_check_update'] ) {
+			return;
+		}
+
+		if ( ! current_user_can( 'update_plugins' ) ) {
+			return;
+		}
+
+		check_admin_referer( 'atelier_check_update' );
+
+		delete_site_transient( self::TRANSIENT_KEY );
+		delete_site_transient( 'update_plugins' );
+
+		wp_safe_redirect( admin_url( 'plugins.php?atelier_checked=1' ) );
+		exit;
+	}
+
+	/**
+	 * Affiche une confirmation après vérification manuelle forcée.
+	 */
+	public static function display_update_checked_notice(): void {
+		if ( ! isset( $_GET['atelier_checked'] ) || '1' !== $_GET['atelier_checked'] ) {
+			return;
+		}
+
+		printf(
+			'<div class="notice notice-success is-dismissible"><p>%s</p></div>',
+			esc_html__( 'Recherche de mise à jour effectuée auprès du dépôt GitHub clyde237/atelier-mcp.', 'atelier-mcp' )
+		);
 	}
 }
